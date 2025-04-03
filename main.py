@@ -154,6 +154,7 @@ class Simfolk:
         self.gender = gender
         self.birthday = birthday
         self.age = 0
+        self.meal_skipped = False
 
         self.collection_aptitudes = {
             FoodCollectionMethod.GATHER: random.choice([x for x in range(1, 100)]),
@@ -163,6 +164,27 @@ class Simfolk:
         }
 
         self.assigned_task = None
+
+    def get_water_cost(self, daynum):
+        if self.age < 17:
+            if (self.birthday + daynum) % 2 == 0:
+                return 1
+            else:
+                return 0
+        else:
+            if self.assigned_task is None:
+                return 1
+            else:
+                return 2
+
+    def get_food_cost(self):
+        if self.age < 17:
+            return 1
+        else:
+            if self.assigned_task is None:
+                return 2
+            else:
+                return 3
 
     def _get_desired_partner_weights(self, available_simfolk):
         # If there's no one available, return empty list
@@ -240,10 +262,10 @@ class Simfolk:
                              FoodCollectionMethod.FISH: 40,
                              FoodCollectionMethod.TRAP: 45
                              }
-        base_amount_dict = {FoodCollectionMethod.GATHER: 3,
-                            FoodCollectionMethod.HUNT: 12,
-                            FoodCollectionMethod.FISH: 5,
-                            FoodCollectionMethod.TRAP: 6
+        base_amount_dict = {FoodCollectionMethod.GATHER: 8,
+                            FoodCollectionMethod.HUNT: 32,
+                            FoodCollectionMethod.FISH: 16,
+                            FoodCollectionMethod.TRAP: 12
                             }
         base_success_rate = base_success_dict[collection_method]
         active_success_rate = (base_success_rate + self.collection_aptitudes[collection_method]) / 2
@@ -303,9 +325,10 @@ class Village:
                     self._resolve_reproduction([interaction.initiator, interaction.target])
 
     def _assign_resource_collection_tasks(self):
-        raw_number_to_assign = len(self.simfolk) // 3 + (random.choice([1, 2, 3]) * random.choice([-1, 1]))
-        number_to_assign = max(1, min(len(self.simfolk), raw_number_to_assign))
-        simfolk_to_asign = random.sample(self.simfolk, number_to_assign)
+        workforce = [sf for sf in self.simfolk if sf.age > 16]
+        raw_number_to_assign = len(workforce) // 3 + (random.choice([1, 2, 3]) * random.choice([-1, 1]))
+        number_to_assign = max(1, min(len(workforce), raw_number_to_assign))
+        simfolk_to_asign = random.sample(workforce, number_to_assign)
         for target_simfolk in simfolk_to_asign:
             new_task_type = weighted_choice([TaskType.FOOD_COLLECT, TaskType.WATER_COLLECT], [.75, .25])
             if new_task_type == TaskType.FOOD_COLLECT:
@@ -324,17 +347,30 @@ class Village:
                     self.water_store += sf.gather_water()
                 elif sf.assigned_task.task_type == TaskType.FOOD_COLLECT:
                     self.food_store += sf.gather_food(sf.assigned_task.sub_info)
-                sf.assigned_task = None
 
     def _pay_upkeep_cost(self):
-        for _ in self.simfolk:
-            self.water_store -= 1
-            self.food_store -= 2
-            if self.water_store == 0 or self.food_store <= 0:
-                return False
-        return True
+        for sf in self.simfolk:
+            water_cost = sf.get_water_cost()
+            if water_cost > self.water_store:
+                thirst_flip = random.choice([True, False])
+                if not thirst_flip:
+                    self.simfolk.remove(sf)
+            self.water_store = max(self.water_store - water_cost, 0)
 
-    def _resolve_deaths(self):
+            food_cost = sf.get_food_cost()
+            if food_cost > self.food_store:
+                if sf.meal_skipped:
+                    starve_roll = weighted_choice([True, False], [.25, .75])
+                    if not starve_roll:
+                        self.simfolk.remove(sf)
+                else:
+                    sf.meal_skipped = True
+            else:
+                sf.meal_skipped = False
+            self.food_store = max(self.food_store - food_cost, 0)
+
+
+    def _resolve_aging(self):
         for sf in list(self.simfolk):
             if self.day % 7 == sf.birthday:
                 sf.age += 1
@@ -342,19 +378,28 @@ class Village:
             if random.random() < death_chance:
                 self.simfolk.remove(sf)
 
+    def _reset_assigned_tasks(self):
+        for sf in self.simfolk:
+            sf.assigned_task = None
+
     def advance_day(self):
         self.day += 1
         self._assign_resource_collection_tasks()
         self._resolve_social_interactions()
         self._resolve_reource_collection()
-        survival = self._pay_upkeep_cost()
+        self._pay_upkeep_cost()
+        self._resolve_aging()
+        self._reset_assigned_tasks()
 
-        return survival
+        if self.simfolk == [] or len(self.simfolk) >= 10000:
+            return False
+        return True
+
 
 
 def main():
     community = Village()
-    for _ in range(4):
+    for _ in range(8):
         community.generate_new_simfolk()
     running = True
 
