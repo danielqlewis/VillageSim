@@ -9,9 +9,37 @@ class TaskType(Enum):
 
 class FoodCollectionMethod(Enum):
     GATHER = 0
-    HUNT = 2
-    FISH = 3
-    TRAP = 4
+    HUNT = 1
+    FISH = 2
+    TRAP = 3
+
+
+class FolkGender(Enum):
+    MALE = 0
+    FEMALE = 1
+
+
+MALE_NAME_BANK = ["Adam", "Alex", "Andrew", "Anthony", "Ben", "Blake", "Brian", "Caleb", "Carl", "Charles",
+                  "Chris", "Cody", "Colin", "Daniel", "David", "Derek", "Dylan", "Elijah", "Eric", "Ethan",
+                  "Evan", "Frank", "Gabe", "Garrett", "George", "Greg", "Henry", "Isaac", "Jack", "Jacob",
+                  "James", "Jason", "Jeff", "Jeremy", "John", "Jordan", "Joseph", "Josh", "Kyle", "Liam",
+                  "Lucas", "Mark", "Matt", "Michael", "Nathan", "Nick", "Noah", "Owen", "Patrick", "Ryan",
+                  "Samuel", "Thomas", "Tyler", "Zach"]
+FEMALE_NAME_BANK = ["Abigail", "Alice", "Amanda", "Amy", "Andrea", "Anna", "Ashley", "Beth", "Brianna", "Brooke",
+                    "Caitlin", "Camilla", "Caroline", "Cassandra", "Charlotte", "Chloe", "Christina", "Claire", "Daisy",
+                    "Danielle",
+                    "Diana", "Elizabeth", "Emily", "Emma", "Erica", "Evelyn", "Faith", "Fiona", "Gabrielle", "Grace",
+                    "Hannah", "Isabella", "Ivy", "Jacqueline", "Jane", "Jessica", "Julia", "Kaitlyn", "Katherine",
+                    "Laura",
+                    "Lauren", "Leah", "Lily", "Madison", "Maria", "Megan", "Natalie", "Nicole", "Olivia", "Rebecca",
+                    "Samantha", "Sarah", "Sophia", "Victoria"]
+SURNAME_NAME_BANK = ["Adler", "Ashford", "Blackwood", "Carrington", "Crestwell", "Darkmoor", "Davenport", "Eldridge",
+                     "Fairchild", "Fenwick",
+                     "Gladstone", "Greenwood", "Hargrove", "Hawthorne", "Holloway", "Kensington", "Lancaster",
+                     "Lockwood", "Montgomery", "Nightingale",
+                     "Norwood", "Pendleton", "Ravenshaw", "Redfern", "Sinclair", "Sterling", "Thorne", "Underwood",
+                     "Vance", "Whitmore",
+                     "Winchester"]
 
 
 def weighted_choice(values, weights):
@@ -120,9 +148,12 @@ class SocialInteraction:
 
 
 class Simfolk:
-    def __init__(self, name):
+    def __init__(self, name, gender, birthday):
         self.name = name
         self.relationships = {}
+        self.gender = gender
+        self.birthday = birthday
+        self.age = 0
 
         self.collection_aptitudes = {
             FoodCollectionMethod.GATHER: random.choice([x for x in range(1, 100)]),
@@ -231,11 +262,30 @@ class Village:
         self.food_store = 40
 
     def add_simfolk(self, simfolk):
-        self.simfolk.append(simfolk)
-
         for existing_sf in self.simfolk:
             simfolk.relationships[existing_sf] = Relationship()
             existing_sf.relationships[simfolk] = Relationship()
+        self.simfolk.append(simfolk)
+
+    def _generate_new_name(self, gender):
+        current_name_pool = [x.name for x in self.simfolk]
+        potential_name_pool = {FolkGender.MALE: MALE_NAME_BANK, FolkGender.FEMALE: FEMALE_NAME_BANK}[gender]
+        while 1:
+            new_name = random.choice(potential_name_pool) + " " + random.choice(SURNAME_NAME_BANK)
+            if new_name not in current_name_pool:
+                return new_name
+
+    def generate_new_simfolk(self):
+        child_gender = random.choice([FolkGender.MALE, FolkGender.FEMALE])
+        child_name = self._generate_new_name(child_gender)
+        child_simfolk = Simfolk(child_name, child_gender, self.day % 7)
+        self.add_simfolk(child_simfolk)
+
+    def _resolve_reproduction(self, parents):
+        roll = random.choice([x for x in range(100)])
+        if roll < 25:
+            if parents[0].gender != parents[1].gender:
+                self.generate_new_simfolk()
 
     def _resolve_social_interactions(self):
         available_simfolk = [sf for sf in self.simfolk if sf.assigned_task is None]
@@ -249,6 +299,8 @@ class Village:
 
             for interaction in proposed_interactions:
                 interaction.resolve()
+                if interaction.interaction_type is Mate:
+                    self._resolve_reproduction([interaction.initiator, interaction.target])
 
     def _assign_resource_collection_tasks(self):
         raw_number_to_assign = len(self.simfolk) // 3 + (random.choice([1, 2, 3]) * random.choice([-1, 1]))
@@ -282,6 +334,14 @@ class Village:
                 return False
         return True
 
+    def _resolve_deaths(self):
+        for sf in list(self.simfolk):
+            if self.day % 7 == sf.birthday:
+                sf.age += 1
+            death_chance = max(0, (sf.age - 60) / 100)  # Starts at age 60, increases by 1% per year
+            if random.random() < death_chance:
+                self.simfolk.remove(sf)
+
     def advance_day(self):
         self.day += 1
         self._assign_resource_collection_tasks()
@@ -293,15 +353,9 @@ class Village:
 
 
 def main():
-    villager_0 = Simfolk("John")
-    villager_1 = Simfolk("Sara")
-    villager_2 = Simfolk("Ben")
-    villager_3 = Simfolk("Mary")
     community = Village()
-    community.add_simfolk(villager_0)
-    community.add_simfolk(villager_1)
-    community.add_simfolk(villager_2)
-    community.add_simfolk(villager_3)
+    for _ in range(4):
+        community.generate_new_simfolk()
     running = True
 
     while running:
