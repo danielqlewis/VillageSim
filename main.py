@@ -350,7 +350,7 @@ class Village:
 
     def _pay_upkeep_cost(self):
         for sf in self.simfolk:
-            water_cost = sf.get_water_cost()
+            water_cost = sf.get_water_cost(self.day)
             if water_cost > self.water_store:
                 thirst_flip = random.choice([True, False])
                 if not thirst_flip:
