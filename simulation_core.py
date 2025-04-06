@@ -6,15 +6,17 @@ class PrimarySimulator:
     def __init__(self):
         self.village = Village(SimulationParams)
         self.current_day = 0
+        for _ in range(SimulationParams.STARTING_POPULATION):
+            self.village.generate_new_simfolk(0, None, 20)
 
     def _advance_day(self):
-        # Main simulation loop
         self.current_day += 1
         self.village.auto_assign_tasks()
         self.village.handle_social_interactions()
         self.village.collect_resources()
-        self.village.consume_resources()
-        self.village.handle_population_events()
+        self.village.pay_upkeep(self.current_day)
+        self.village.handle_population_events(self.current_day)
+        self.village.night_reset()
 
     def run_simulation(self):
         running = True

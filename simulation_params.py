@@ -7,3 +7,7 @@ class SimulationParams:
     # End Conditions parameters
     MAX_POPULATION = 250
     MAX_DAYS = 3000
+
+
+    # Reproduction parameters
+    BASE_REPRODUCTION_CHANCE = 50

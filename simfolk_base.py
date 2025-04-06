@@ -11,3 +11,7 @@ class Simfolk:
         self.age = 0
         self.resources = SimfolkResource()
         self.social = SimfolkSocial()
+
+    def step_reset(self):
+        self.resources.assigned_task = None
+        self.social.social_interaction_count = 0
