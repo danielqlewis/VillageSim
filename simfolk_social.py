@@ -159,12 +159,15 @@ class SimfolkSocial:
     def create_relationship(self, other_simfolk):
         self.relationships[other_simfolk] = Relationship()
 
-    def consider_proposal(self, other, interaction):
+    def consider_proposal(self, other, interaction, procreation_favored=False):
 
         if interaction.interaction_type == Mate and other.age < 17:
             return False
 
-        threshold = interaction.interaction_type.relationship_threshold
+        if interaction.interaction_type == Mate and procreation_favored:
+            threshold = [50, 100, 0, 0]
+        else:
+            threshold = interaction.interaction_type.relationship_threshold
         relationship = self.relationships[other]
         if relationship.respect < threshold[0]:
             return False
@@ -198,7 +201,7 @@ class SimfolkSocial:
         total = sum(weights)
         return [w / total for w in weights]
 
-    def get_interaction_type_weights(self, partner):
+    def get_interaction_type_weights(self, partner, procreation_favored=False):
         weights = []
 
         relationship = self.relationships[partner]
@@ -258,6 +261,10 @@ class SimfolkSocial:
 
             if relationship.cooperativity < threshold[3]:
                 threshold_deficit += (threshold[3] - relationship.cooperativity) / 50
+
+
+            if procreation_favored and interaction == Mate:
+                weight *= 3
 
             weight = max(1, weight - threshold_deficit)
             weights.append(weight)

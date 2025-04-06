@@ -38,10 +38,14 @@ class Simfolk:
             else:
                 return 3
 
-    def propose_interaction(self, available_simfolk):
+    def propose_interaction(self, available_simfolk, reproduction_favored):
         partner_choice_weights = self.social.get_desired_partner_weights(available_simfolk)
         target_partner = utils.weighted_choice(available_simfolk, partner_choice_weights)
-        activity_choice_weights = self.social.get_interaction_type_weights(target_partner)
+        if target_partner.gender != self.gender and target_partner.age > 16 and self.age > 16:
+            procreation_favored = reproduction_favored
+        else:
+            procreation_favored = False
+        activity_choice_weights = self.social.get_interaction_type_weights(target_partner, procreation_favored)
         proposed_activity = utils.weighted_choice(ALLINTERACTIONS, activity_choice_weights)
         if proposed_activity == Mate and target_partner.age < 17:
             return None

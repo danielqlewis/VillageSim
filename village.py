@@ -103,11 +103,12 @@ class Village:
     def handle_social_interactions(self):
         available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
         interacted_pairs = set()
+        reporduction_favored = len(self.population) <= self.params.REPRODUCTION_BONUS_CUTOFF
 
         if len(available_simfolk) > 1:
             proposed_interactions = []
             for sf in available_simfolk:
-                proposal = sf.propose_interaction([s for s in available_simfolk if s != sf])
+                proposal = sf.propose_interaction([s for s in available_simfolk if s != sf], reporduction_favored)
                 if proposal:
                     proposed_interactions.append(proposal)
 
@@ -119,7 +120,7 @@ class Village:
                 elif (interaction.initiator, interaction.target) in interacted_pairs:
                     pass
                 else:
-                    interaction_success = interaction.target.social.consider_proposal(interaction.initiator, interaction)
+                    interaction_success = interaction.target.social.consider_proposal(interaction.initiator, interaction, reporduction_favored)
                     if interaction_success:
                         interaction.initiator.social.social_interaction_count += 1
                         interaction.target.social.social_interaction_count += 1

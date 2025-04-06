@@ -11,3 +11,4 @@ class SimulationParams:
 
     # Reproduction parameters
     BASE_REPRODUCTION_CHANCE = 50
+    REPRODUCTION_BONUS_CUTOFF = 20
