@@ -1,10 +1,8 @@
-import random
-import utils
 from village import Village
 from simulation_params import SimulationParams
 
 
-class Primary_Simulator:
+class PrimarySimulator:
     def __init__(self):
         self.village = Village(SimulationParams)
         self.current_day = 0

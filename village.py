@@ -1,3 +1,14 @@
+import random
+from simfolk_base import Simfolk
+from enums import FolkGender, TaskType, TaskAssignment, FoodCollectionMethod
+import utils
+
+# Define name banks (or import from a separate file)
+MALE_NAME_BANK = ["James", "John", "Robert", "Michael", "William"]  # Expand as needed
+FEMALE_NAME_BANK = ["Mary", "Patricia", "Jennifer", "Linda", "Elizabeth"]  # Expand as needed
+SURNAME_NAME_BANK = ["Smith", "Johnson", "Williams", "Jones", "Brown"]  # Expand as needed
+
+
 class Village:
     def __init__(self, params):
         self.population = []
@@ -7,9 +18,9 @@ class Village:
 
     def add_simfolk(self, simfolk):
         for existing_sf in self.population:
-            simfolk.social.relationships[existing_sf] = Relationship()
-            existing_sf.relationships[simfolk] = Relationship()
-        self.simfolk.append(simfolk)
+            simfolk.social.create_relationship(existing_sf)
+            existing_sf.social.create_relationship(simfolk)
+        self.population.append(simfolk)
 
     def remove_simfolk(self, simfolk):
         if simfolk in self.population:

@@ -3,6 +3,9 @@ class SimfolkSocial:
         self.relationships = {}
         self.social_interaction_count = 0
 
+    def create_relationship(self, other_simfolk):
+        pass
+
     def get_relationship(self, other_simfolk):
         # Get or create relationship
         pass
