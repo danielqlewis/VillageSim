@@ -35,18 +35,18 @@ class SimfolkResource:
 
     @staticmethod
     def gather_water():
-        return 18
+        return 24 + random.choice([x for x in range(-4, 5)])
 
     def gather_food(self, collection_method):
-        base_success_dict = {FoodCollectionMethod.GATHER: 60,
-                             FoodCollectionMethod.HUNT: 20,
-                             FoodCollectionMethod.FISH: 40,
-                             FoodCollectionMethod.TRAP: 45
+        base_success_dict = {FoodCollectionMethod.GATHER: 75,
+                             FoodCollectionMethod.HUNT: 30,
+                             FoodCollectionMethod.FISH: 50,
+                             FoodCollectionMethod.TRAP: 55
                              }
-        base_amount_dict = {FoodCollectionMethod.GATHER: 8,
-                            FoodCollectionMethod.HUNT: 32,
-                            FoodCollectionMethod.FISH: 16,
-                            FoodCollectionMethod.TRAP: 12
+        base_amount_dict = {FoodCollectionMethod.GATHER: 12,
+                            FoodCollectionMethod.HUNT: 42,
+                            FoodCollectionMethod.FISH: 22,
+                            FoodCollectionMethod.TRAP: 16
                             }
         base_success_rate = base_success_dict[collection_method]
         active_success_rate = (base_success_rate + self.collection_aptitudes[collection_method]) / 2
