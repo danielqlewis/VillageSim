@@ -1,3 +1,5 @@
+import random
+from program_enums import FoodCollectionMethod
 
 
 class TaskAssignment:
@@ -26,27 +28,6 @@ class SimfolkResource:
         if total == 0:
             return [1 / len(values)] * len(values)  # fallback to equal distribution
         return [v / total for v in values]
-
-    def get_water_cost(self, daynum):
-        if self.age < 17:
-            if (self.birthday + daynum) % 2 == 0:
-                return 1
-            else:
-                return 0
-        else:
-            if self.assigned_task is None:
-                return 1
-            else:
-                return 2
-
-    def get_food_cost(self):
-        if self.age < 17:
-            return 1
-        else:
-            if self.assigned_task is None:
-                return 2
-            else:
-                return 3
 
     def level_up_aptitude(self, apt):
         if self.collection_aptitudes[apt] < 100:

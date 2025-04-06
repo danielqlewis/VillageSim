@@ -160,14 +160,14 @@ class Village:
 
     def pay_upkeep(self, day):
         for sf in self.population:
-            water_cost = sf.resources.get_water_cost(day)
+            water_cost = sf.get_water_cost(day)
             if water_cost > self.water_store:
                 thirst_flip = random.choice([True, False])
                 if not thirst_flip:
                     self.remove_simfolk(sf)
             self.water_store = max(self.water_store - water_cost, 0)
 
-            food_cost = sf.resources.get_food_cost()
+            food_cost = sf.get_food_cost()
             if food_cost > self.food_store:
                 if sf.resources.meal_skipped:
                     starve_roll = utils.weighted_choice([True, False], [.25, .75])
@@ -189,7 +189,7 @@ class Village:
                 sf.age += 1
             death_chance = max(0, (sf.age - 60) / 100)  # Starts at age 60, increases by 1% per year
             if random.random() < death_chance:
-                self.simfolk.remove(sf)
+                self.remove_simfolk(sf)
 
 
     def handle_population_events(self, day):

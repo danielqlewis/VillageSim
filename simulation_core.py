@@ -14,8 +14,8 @@ class PrimarySimulator:
         self.village.auto_assign_tasks()
         self.village.handle_social_interactions()
         self.village.collect_resources()
-        self.village.pay_upkeep(self.current_day)
         self.village.handle_population_events(self.current_day)
+        self.village.pay_upkeep(self.current_day)
         self.village.night_reset()
 
     def run_simulation(self):
