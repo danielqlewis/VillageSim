@@ -115,26 +115,27 @@ InteractionAttributeToInfluenceDict = {InteractionAttributes.COOPERATIVE: cooper
 
 
 class InteractionType:
-    def __init__(self, effect_on_init, effect_on_target, relationship_threshold, interaction_attributes):
+    def __init__(self, flag, effect_on_init, effect_on_target, relationship_threshold, interaction_attributes):
+        self.flag = flag
         self.effect_on_init = effect_on_init
         self.effect_on_target = effect_on_target
         self.relationship_threshold = relationship_threshold
         self.interaction_attributes = interaction_attributes
 
 
-Talk = InteractionType(talk_init_mod, talk_target_mod, talk_threshold, talk_attribute_list)
-Share_Food = InteractionType(share_food_init_mod, share_food_target_mod, share_food_threshold,
+Talk = InteractionType("talk", talk_init_mod, talk_target_mod, talk_threshold, talk_attribute_list)
+Share_Food = InteractionType("share food", share_food_init_mod, share_food_target_mod, share_food_threshold,
                              share_food_attribute_list)
-Game = InteractionType(game_init_mod, game_target_mod, game_threshold, game_attribute_list)
-Sport = InteractionType(sport_init_mod, sport_target_mod, sport_threshold, sport_attribute_list)
-Make_Art = InteractionType(make_art_init_mod, make_art_target_mod, make_art_threshold, make_art_attribute_list)
-Wrestle = InteractionType(wrestle_init_mod, wrestle_target_mod, wrestle_threshold, wrestle_attribute_list)
-Debate = InteractionType(debate_init_mod, debate_target_mod, debate_threshold, debate_attribute_list)
-Argue = InteractionType(argue_init_mod, argue_target_mod, argue_threshold, argue_attribute_list)
-Fight = InteractionType(fight_init_mod, fight_target_mod, fight_threshold, fight_attribute_list)
-Lounge = InteractionType(lounge_init_mod, lounge_target_mod, lounge_threshold, lounge_attribute_list)
-Cuddle = InteractionType(cuddle_init_mod, cuddle_target_mod, cuddle_threshold, cuddle_attribute_list)
-Mate = InteractionType(mate_init_mod, mate_target_mod, mate_threshold, mate_attribute_list)
+Game = InteractionType("game", game_init_mod, game_target_mod, game_threshold, game_attribute_list)
+Sport = InteractionType("sport", sport_init_mod, sport_target_mod, sport_threshold, sport_attribute_list)
+Make_Art = InteractionType("make art", make_art_init_mod, make_art_target_mod, make_art_threshold, make_art_attribute_list)
+Wrestle = InteractionType("wrestle", wrestle_init_mod, wrestle_target_mod, wrestle_threshold, wrestle_attribute_list)
+Debate = InteractionType("debate", debate_init_mod, debate_target_mod, debate_threshold, debate_attribute_list)
+Argue = InteractionType("argue", argue_init_mod, argue_target_mod, argue_threshold, argue_attribute_list)
+Fight = InteractionType("fight", fight_init_mod, fight_target_mod, fight_threshold, fight_attribute_list)
+Lounge = InteractionType("lounge", lounge_init_mod, lounge_target_mod, lounge_threshold, lounge_attribute_list)
+Cuddle = InteractionType("cuddle", cuddle_init_mod, cuddle_target_mod, cuddle_threshold, cuddle_attribute_list)
+Mate = InteractionType("mate", mate_init_mod, mate_target_mod, mate_threshold, mate_attribute_list)
 
 ALLINTERACTIONS = [Talk, Share_Food, Game, Sport, Make_Art, Wrestle, Debate, Argue, Fight, Lounge, Cuddle, Mate]
 
