@@ -160,6 +160,10 @@ class SimfolkSocial:
         self.relationships[other_simfolk] = Relationship()
 
     def consider_proposal(self, other, interaction):
+
+        if interaction.interaction_type == Mate and other.age < 17:
+            return False
+
         threshold = interaction.interaction_type.relationship_threshold
         relationship = self.relationships[other]
         if relationship.respect < threshold[0]:

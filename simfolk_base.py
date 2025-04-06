@@ -1,6 +1,6 @@
 import utils
 from simfolk_resources import SimfolkResource
-from simfolk_social import SimfolkSocial, ALLINTERACTIONS, SocialInteraction
+from simfolk_social import SimfolkSocial, ALLINTERACTIONS, SocialInteraction, Mate
 
 
 class Simfolk:
@@ -43,4 +43,6 @@ class Simfolk:
         target_partner = utils.weighted_choice(available_simfolk, partner_choice_weights)
         activity_choice_weights = self.social.get_interaction_type_weights(target_partner)
         proposed_activity = utils.weighted_choice(ALLINTERACTIONS, activity_choice_weights)
+        if proposed_activity == Mate and target_partner.age < 17:
+            return None
         return SocialInteraction(proposed_activity, self, target_partner)

@@ -94,7 +94,7 @@ class Village:
                 self.pending_births.append(parents)
 
     def handle_social_interactions(self):
-        available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None]
+        available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
         interacted_pairs = set()
 
         if len(available_simfolk) > 1:
@@ -120,7 +120,8 @@ class Village:
                         interacted_pairs.add((interaction.target, interaction.initiator))
                         interaction.resolve()
                         if interaction.interaction_type is Mate:
-                            self._resolve_reproduction([interaction.initiator, interaction.target])
+                            if interaction.initiator.age > 17 and interaction.target.age > 17:
+                                self._resolve_reproduction([interaction.initiator, interaction.target])
 
                     for observer in [sf for sf in available_simfolk if sf != interaction.initiator and sf != interaction.target]:
                         relationship_with_initiator = observer.social.relationships[interaction.initiator]
