@@ -1,7 +1,9 @@
 import random
-from simfolk_base import Simfolk
-from enums import FolkGender, TaskType, TaskAssignment, FoodCollectionMethod
 import utils
+from simfolk_base import Simfolk
+from name_generator import generate_name
+from enums import FolkGender, TaskType, TaskAssignment, FoodCollectionMethod
+
 
 # Define name banks (or import from a separate file)
 MALE_NAME_BANK = ["James", "John", "Robert", "Michael", "William"]  # Expand as needed
@@ -26,35 +28,10 @@ class Village:
         if simfolk in self.population:
             self.population.remove(simfolk)
 
-    def _generate_new_name(self, gender, parents):
-        current_name_pool = [x.name for x in self.simfolk]
-        potential_name_pool = {FolkGender.MALE: MALE_NAME_BANK, FolkGender.FEMALE: FEMALE_NAME_BANK}[gender]
-        for _ in range(100):
-            new_name = random.choice(potential_name_pool) + " " + random.choice(SURNAME_NAME_BANK)
-            if new_name not in current_name_pool:
-                return new_name, 0
-
-        if parents is not None:
-            for parent in parents:
-                if parent.gender == gender:
-                    new_name = parent.name
-                    if parent.postnomial == 0:
-                        new_postnomial = 2
-                    else:
-                        new_postnomial = (parent.postnomial + 1) % 10
-                    return new_name, new_postnomial
-
-        if gender == FolkGender.MALE:
-            return "John Doe", 0
-        elif gender == FolkGender.FEMALE:
-            return "Jane Doe", 0
-        else:
-            return "Zork the Destroyer", 0
-
-    def generate_new_simfolk(self, parents, age=0):
+    def generate_new_simfolk(self, day, parents, age=0):
         child_gender = random.choice([FolkGender.MALE, FolkGender.FEMALE])
-        child_name, child_postnomial = self._generate_new_name(child_gender, parents)
-        child_simfolk = Simfolk(child_name, child_gender, self.day % 7)
+        child_name, child_postnomial = generate_name(self.population, child_gender, parents)
+        child_simfolk = Simfolk(child_name, child_gender, day % 7, child_postnomial)
         if age != 0:
             child_simfolk.age = age
         self.add_simfolk(child_simfolk)
