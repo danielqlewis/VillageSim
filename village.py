@@ -2,7 +2,9 @@ import random
 import utils
 from simfolk_base import Simfolk
 from name_generator import generate_name
-from program_enums import FolkGender, TaskType, TaskAssignment, FoodCollectionMethod
+from program_enums import FolkGender, TaskType, FoodCollectionMethod
+from simfolk_resources import TaskAssignment
+from simfolk_social import Mate, InteractionAttributeToInfluenceDict
 
 
 class Village:
@@ -98,22 +100,22 @@ class Village:
         if len(available_simfolk) > 1:
             proposed_interactions = []
             for sf in available_simfolk:
-                proposal = sf.social.propose_interaction([s for s in available_simfolk if s != sf])
+                proposal = sf.propose_interaction([s for s in available_simfolk if s != sf])
                 if proposal:
                     proposed_interactions.append(proposal)
 
             for interaction in proposed_interactions:
-                if interaction.initiator.social_interaction_count >= 3:
+                if interaction.initiator.social.social_interaction_count >= 3:
                     pass
-                elif interaction.target.social_interaction_count >= 3:
+                elif interaction.target.social.social_interaction_count >= 3:
                     pass
                 elif (interaction.initiator, interaction.target) in interacted_pairs:
                     pass
                 else:
-                    interaction_success = interaction.target.consider_proposal(interaction.initiator, interaction)
+                    interaction_success = interaction.target.social.consider_proposal(interaction.initiator, interaction)
                     if interaction_success:
-                        interaction.initiator.social_interaction_count += 1
-                        interaction.target.social_interaction_count += 1
+                        interaction.initiator.social.social_interaction_count += 1
+                        interaction.target.social.social_interaction_count += 1
                         interacted_pairs.add((interaction.initiator, interaction.target))
                         interacted_pairs.add((interaction.target, interaction.initiator))
                         interaction.resolve()
@@ -121,8 +123,8 @@ class Village:
                             self._resolve_reproduction([interaction.initiator, interaction.target])
 
                     for observer in [sf for sf in available_simfolk if sf != interaction.initiator and sf != interaction.target]:
-                        relationship_with_initiator = observer.relationships[interaction.initiator]
-                        relationship_with_target = observer.relationships[interaction.target]
+                        relationship_with_initiator = observer.social.relationships[interaction.initiator]
+                        relationship_with_target = observer.social.relationships[interaction.target]
                         if interaction_success:
                             initiator_influence_list = []
                             target_influence_list = []

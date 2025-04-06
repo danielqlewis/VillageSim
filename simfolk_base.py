@@ -1,5 +1,6 @@
+import utils
 from simfolk_resources import SimfolkResource
-from simfolk_social import SimfolkSocial
+from simfolk_social import SimfolkSocial, ALLINTERACTIONS, SocialInteraction
 
 
 class Simfolk:
@@ -36,3 +37,10 @@ class Simfolk:
                 return 2
             else:
                 return 3
+
+    def propose_interaction(self, available_simfolk):
+        partner_choice_weights = self.social.get_desired_partner_weights(available_simfolk)
+        target_partner = utils.weighted_choice(available_simfolk, partner_choice_weights)
+        activity_choice_weights = self.social.get_interaction_type_weights(target_partner)
+        proposed_activity = utils.weighted_choice(ALLINTERACTIONS, activity_choice_weights)
+        return SocialInteraction(proposed_activity, self, target_partner)

@@ -28,3 +28,6 @@ class PrimarySimulator:
 
             if len(self.village.population) > SimulationParams.MAX_POPULATION:
                 running = False
+
+            if not self.village.population:
+                break

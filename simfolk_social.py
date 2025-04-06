@@ -1,3 +1,7 @@
+import random
+from program_enums import InteractionAttributes
+
+
 class Relationship:
     def __init__(self, respect=100, enjoyment=100, esteem=100, cooperativity=100):
         self.respect = respect  # How much respect one has for the other
@@ -142,8 +146,8 @@ class SocialInteraction:
         self.target = target
 
     def resolve(self):
-        self.interaction_type.effect_on_init.resolve(self.initiator.relationships[self.target])
-        self.interaction_type.effect_on_target.resolve(self.target.relationships[self.initiator])
+        self.interaction_type.effect_on_init.resolve(self.initiator.social.relationships[self.target])
+        self.interaction_type.effect_on_target.resolve(self.target.social.relationships[self.initiator])
 
 
 class SimfolkSocial:
@@ -167,7 +171,7 @@ class SimfolkSocial:
             return False
         return True
 
-    def _get_desired_partner_weights(self, available_simfolk):
+    def get_desired_partner_weights(self, available_simfolk):
         # If there's no one available, return empty list
         if not available_simfolk:
             return []
@@ -189,7 +193,7 @@ class SimfolkSocial:
         total = sum(weights)
         return [w / total for w in weights]
 
-    def _get_interaction_type_weights(self, partner):
+    def get_interaction_type_weights(self, partner):
         weights = []
 
         relationship = self.relationships[partner]
@@ -257,9 +261,3 @@ class SimfolkSocial:
         total = sum(weights)
         return [w / total for w in weights]
 
-    def propose_interaction(self, available_simfolk):
-        partner_choice_weights = self._get_desired_partner_weights(available_simfolk)
-        target_partner = weighted_choice(available_simfolk, partner_choice_weights)
-        activity_choice_weights = self._get_interaction_type_weights(target_partner)
-        proposed_activity = weighted_choice(ALLINTERACTIONS, activity_choice_weights)
-        return SocialInteraction(proposed_activity, self, target_partner)
