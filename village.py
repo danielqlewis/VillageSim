@@ -14,6 +14,12 @@ class Village:
         self.water_store = params.STARTING_WATER
         self.params = params
         self.pending_births = []
+        self.food_limit_tracker = [0, 0, 0, 0]
+
+    def add_food(self, amount, source):
+        effective_ammount = min(amount, max(60 - amount, 0))
+        self.food_store += effective_ammount
+        self.food_limit_tracker[source.value] += effective_ammount
 
     def add_simfolk(self, simfolk):
         for existing_sf in self.population:
@@ -35,6 +41,7 @@ class Village:
 
     def night_reset(self):
         self.pending_births = []
+        self.food_limit_tracker = [0, 0, 0, 0]
         for sf in self.population:
             sf.step_reset()
 
@@ -152,7 +159,7 @@ class Village:
                     self.water_store += sf.resources.gather_water()
                 elif sf.resources.assigned_task.task_type == TaskType.FOOD_COLLECT:
                     collection_result = sf.resources.gather_food(sf.resources.assigned_task.sub_info)
-                    self.food_store += collection_result
+                    self.add_food(collection_result, sf.resources.assigned_task.sub_info)
                     modifier_magnitude = 1 + (sf.resources.collection_aptitudes[sf.resources.assigned_task.sub_info] // 18)
                     if collection_result == 0:
                         relationship_mod = (0, 0, -modifier_magnitude, 0)
