@@ -147,7 +147,7 @@ class Village:
 
     def collect_resources(self):
         for sf in self.population:
-            if sf.resources.assigned_task is not None:
+            if sf.resources.assigned_task is not None and sf.age > 3:
                 if sf.resources.assigned_task.task_type == TaskType.WATER_COLLECT:
                     self.water_store += sf.resources.gather_water()
                 elif sf.resources.assigned_task.task_type == TaskType.FOOD_COLLECT:
