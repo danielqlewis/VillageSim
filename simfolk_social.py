@@ -36,18 +36,8 @@ class SimfolkSocial:
     def create_relationship(self, other_simfolk):
         self.relationships[other_simfolk] = Relationship()
 
-    def consider_proposal(self, interaction, procreation_favored=False):
-
-        other = interaction.initiator
-
-        if interaction.interaction_info.interaction_type == InteractionType.MATE and other.age < 17:
-            return False
-
-        if interaction.interaction_info.interaction_type == InteractionType.MATE and procreation_favored:
-            threshold = [50, 100, 0, 0]
-        else:
-            threshold = interaction.interaction_info.relationship_threshold
-        relationship = self.relationships[other]
+    def _standard_proposal_check(self, interaction, threshold):
+        relationship = self.relationships[interaction.initiator]
         if relationship.respect < threshold[0]:
             return False
         elif relationship.enjoyment < threshold[1]:
@@ -57,6 +47,18 @@ class SimfolkSocial:
         elif relationship.cooperativity < threshold[3]:
             return False
         return True
+
+    def consider_proposal(self, interaction, procreation_favored=False):
+        if interaction.interaction_info.interaction_type == InteractionType.MATE and interaction.initiator < 17:
+            return False
+
+        threshold = interaction.interaction_info.relationship_threshold
+
+        if interaction.interaction_info.interaction_type == InteractionType.MATE and procreation_favored:
+            threshold = [50, 100, 0, 0]
+
+        return self._standard_proposal_check(interaction, threshold)
+
 
     def get_proposal_details(self, available_simfolk, reproduction_favored, gender, age):
         partner_choice_weights = self.get_desired_partner_weights(available_simfolk)
@@ -76,9 +78,8 @@ class SimfolkSocial:
 
         weights = []
         for partner in available_simfolk:
-            # Get the relationship or create a new one if it doesn't exist
             if partner not in self.relationships:
-                self.relationships[partner] = Relationship()
+                self.create_relationship(partner)
 
             # Use the enjoyment value as the weight
             weights.append(self.relationships[partner].enjoyment)
@@ -91,71 +92,76 @@ class SimfolkSocial:
         total = sum(weights)
         return [w / total for w in weights]
 
-    def get_interaction_type_weights(self, partner, procreation_favored=False):
-        weights = []
+    @staticmethod
+    def _get_attributes_factor(interaction):
+        total_factor = 0
 
+        # Calculate proportional factors for each attribute
+        for attribute in interaction.interaction_attributes:
+            if attribute == InteractionAttributes.COMMUNICATIVE:
+                total_factor += relationship.respect / 500
+
+            elif attribute == InteractionAttributes.FUN:
+                total_factor += relationship.enjoyment / 400
+
+            elif attribute == InteractionAttributes.INTIMATE:
+                total_factor += (relationship.enjoyment - 200) / 300
+
+            elif attribute == InteractionAttributes.COMBATIVE:
+                total_factor += (500 - relationship.enjoyment) / 1000
+
+            elif attribute == InteractionAttributes.SKILL:
+                total_factor += relationship.esteem / 400
+
+            elif attribute == InteractionAttributes.COOPERATIVE:
+                total_factor += relationship.cooperativity / 500
+
+            elif attribute == InteractionAttributes.RECREATION:
+                total_factor += relationship.enjoyment / 600
+
+        return total_factor
+
+    @staticmethod
+    def _scale_attribute_contribution(interaction, total_factor):
+        max_attribute_contribution = 30
+        if interaction.interaction_attributes:
+            attribute_contribution = max_attribute_contribution * (
+                    total_factor / len(interaction.interaction_attributes))
+        else:
+            attribute_contribution = 0
+        return attribute_contribution
+
+    def _get_threshold_penalty(self, partner, interaction):
         relationship = self.relationships[partner]
 
-        # Maximum contribution from attributes (fixed regardless of attribute count)
-        max_attribute_contribution = 30
+        threshold = interaction.relationship_threshold
+        threshold_deficit = 0
 
+        if relationship.respect < threshold[0]:
+            threshold_deficit += (threshold[0] - relationship.respect) / 50
+
+        if relationship.enjoyment < threshold[1]:
+            threshold_deficit += (threshold[1] - relationship.enjoyment) / 50
+
+        if relationship.esteem < threshold[2]:
+            threshold_deficit += (threshold[2] - relationship.esteem) / 50
+
+        if relationship.cooperativity < threshold[3]:
+            threshold_deficit += (threshold[3] - relationship.cooperativity) / 50
+
+        return threshold_deficit
+
+    def get_interaction_type_weights(self, partner, procreation_favored=False):
+        weights = []
         for interaction in social_interaction_config.get_all_interaction_definitions():
-            # Start with base weight
             base_weight = 10
-            total_factor = 0
-
-            # Calculate proportional factors for each attribute
-            for attribute in interaction.interaction_attributes:
-                if attribute == InteractionAttributes.COMMUNICATIVE:
-                    total_factor += relationship.respect / 500
-
-                elif attribute == InteractionAttributes.FUN:
-                    total_factor += relationship.enjoyment / 400
-
-                elif attribute == InteractionAttributes.INTIMATE:
-                    total_factor += (relationship.enjoyment - 200) / 300
-
-                elif attribute == InteractionAttributes.COMBATIVE:
-                    total_factor += (500 - relationship.enjoyment) / 1000
-
-                elif attribute == InteractionAttributes.SKILL:
-                    total_factor += relationship.esteem / 400
-
-                elif attribute == InteractionAttributes.COOPERATIVE:
-                    total_factor += relationship.cooperativity / 500
-
-                elif attribute == InteractionAttributes.RECREATION:
-                    total_factor += relationship.enjoyment / 600
-
-            # Scale to fixed maximum contribution
-            if interaction.interaction_attributes:
-                attribute_contribution = max_attribute_contribution * (
-                        total_factor / len(interaction.interaction_attributes))
-            else:
-                attribute_contribution = 0
-
+            raw_attribute_factor = self._get_attributes_factor(interaction)
+            attribute_contribution = self._scale_attribute_contribution(interaction, raw_attribute_factor)
             weight = base_weight + attribute_contribution
-
-            # Add threshold penalty
-            threshold = interaction.relationship_threshold
-            threshold_deficit = 0
-
-            if relationship.respect < threshold[0]:
-                threshold_deficit += (threshold[0] - relationship.respect) / 50
-
-            if relationship.enjoyment < threshold[1]:
-                threshold_deficit += (threshold[1] - relationship.enjoyment) / 50
-
-            if relationship.esteem < threshold[2]:
-                threshold_deficit += (threshold[2] - relationship.esteem) / 50
-
-            if relationship.cooperativity < threshold[3]:
-                threshold_deficit += (threshold[3] - relationship.cooperativity) / 50
-
+            threshold_deficit = self._get_threshold_penalty(partner, interaction)
+            weight = max(1, weight - threshold_deficit)
             if procreation_favored and interaction.interaction_type == InteractionType.MATE:
                 weight *= 3
-
-            weight = max(1, weight - threshold_deficit)
             weights.append(weight)
 
         # Normalize weights
