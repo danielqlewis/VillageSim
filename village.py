@@ -2,9 +2,9 @@ import random
 import utils
 from simfolk_base import Simfolk
 from name_generator import generate_name
-from program_enums import FolkGender, TaskType, FoodCollectionMethod, DeathCause
+from program_enums import FolkGender, TaskType, FoodCollectionMethod, DeathCause, InteractionType
 from simfolk_resources import TaskAssignment
-from simfolk_social import Mate, InteractionAttributeToInfluenceDict
+from simfolk_social import InteractionAttributeToInfluenceDict
 
 
 class Village:
@@ -130,7 +130,7 @@ class Village:
         self.interacted_pairs.add((interaction.initiator, interaction.target))
         self.interacted_pairs.add((interaction.target, interaction.initiator))
         interaction.resolve()
-        if interaction.interaction_type is Mate:
+        if interaction.interaction_info.interaction_type is InteractionType.MATE:
             if interaction.initiator.age > 16 and interaction.target.age > 16:
                 self._resolve_reproduction([interaction.initiator, interaction.target])
 
@@ -153,9 +153,9 @@ class Village:
 
     def _resolve_observer_influence(self, interaction, observer, interaction_success):
         influence_towards_initiator = self._get_influence("initiator",
-                                                          interaction.interaction_type.interaction_attributes,
+                                                          interaction.interaction_info.interaction_attributes,
                                                           interaction_success)
-        influence_towards_target = self._get_influence("target", interaction.interaction_type.interaction_attributes,
+        influence_towards_target = self._get_influence("target", interaction.interaction_info.interaction_attributes,
                                                        interaction_success)
 
         influence_towards_initiator = utils.jitter_tuple(influence_towards_initiator)

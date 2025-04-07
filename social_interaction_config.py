@@ -1,4 +1,6 @@
+import random
 from program_enums import InteractionType, InteractionAttributes
+
 
 class RelationshipModifier:
     def __init__(self, base_mod, randomization):

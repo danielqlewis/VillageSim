@@ -1,4 +1,4 @@
-import random
+import utils
 import social_interaction_config
 from program_enums import InteractionAttributes, InteractionType
 
@@ -18,14 +18,14 @@ class Relationship:
 
 
 class SocialInteraction:
-    def __init__(self, interaction_type, initiator, target):
-        self.interaction_type = interaction_type
+    def __init__(self, interaction_info, initiator, target):
+        self.interaction_info = interaction_info
         self.initiator = initiator
         self.target = target
 
     def resolve(self):
-        self.interaction_type.effect_on_init.resolve(self.initiator.social.relationships[self.target])
-        self.interaction_type.effect_on_target.resolve(self.target.social.relationships[self.initiator])
+        self.interaction_info.effect_on_init.resolve(self.initiator.social.relationships[self.target])
+        self.interaction_info.effect_on_target.resolve(self.target.social.relationships[self.initiator])
 
 
 class SimfolkSocial:
@@ -40,13 +40,13 @@ class SimfolkSocial:
 
         other = interaction.initiator
 
-        if interaction.interaction_type == Mate and other.age < 17:
+        if interaction.interaction_info.interaction == Mate and other.age < 17:
             return False
 
-        if interaction.interaction_type == Mate and procreation_favored:
+        if interaction.interaction_info == Mate and procreation_favored:
             threshold = [50, 100, 0, 0]
         else:
-            threshold = interaction.interaction_type.relationship_threshold
+            threshold = interaction.interaction_info.relationship_threshold
         relationship = self.relationships[other]
         if relationship.respect < threshold[0]:
             return False

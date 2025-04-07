@@ -239,7 +239,7 @@ class Simfolk:
         return [v / total for v in values]
 
     def consider_proposal(self, other, interaction):
-        threshold = interaction.interaction_type.relationship_threshold
+        threshold = interaction.interaction_info.relationship_threshold
         relationship = self.relationships[other]
         if relationship.respect < threshold[0]:
             return False
@@ -478,7 +478,7 @@ class Village:
                         interacted_pairs.add((interaction.initiator, interaction.target))
                         interacted_pairs.add((interaction.target, interaction.initiator))
                         interaction.resolve()
-                        if interaction.interaction_type is Mate:
+                        if interaction.interaction_info is Mate:
                             self._resolve_reproduction([interaction.initiator, interaction.target])
 
                     for observer in [sf for sf in available_simfolk if sf != interaction.initiator and sf != interaction.target]:
@@ -487,7 +487,7 @@ class Village:
                         if interaction_success:
                             initiator_influence_list = []
                             target_influence_list = []
-                            for interaction_attribute in interaction.interaction_type.interaction_attributes:
+                            for interaction_attribute in interaction.interaction_info.interaction_attributes:
                                 local_influence = InteractionAttributeToInfluenceDict[interaction_attribute]
                                 initiator_influence_list.append(local_influence.on_initiator)
                                 target_influence_list.append(local_influence.on_target)
