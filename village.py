@@ -7,7 +7,6 @@ from simfolk_resources import TaskAssignment
 from simfolk_social import Mate, InteractionAttributeToInfluenceDict
 
 
-
 class Village:
     def __init__(self, params):
         self.population = []
@@ -107,7 +106,6 @@ class Village:
             if parents[0].gender != parents[1].gender:
                 self.pending_births.append(parents)
 
-
     def _get_interaction_proposals(self, reporduction_favored):
         available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
         proposed_interactions = []
@@ -119,11 +117,11 @@ class Village:
 
     def _check_interaction_available(self, interaction):
         if interaction.initiator.social.social_interaction_count >= 3:
-            False
+            return False
         elif interaction.target.social.social_interaction_count >= 3:
-            False
+            return False
         elif (interaction.initiator, interaction.target) in self.interacted_pairs:
-            False
+            return False
         return True
 
     def _resolve_interaction(self, interaction):
@@ -136,60 +134,74 @@ class Village:
             if interaction.initiator.age > 16 and interaction.target.age > 16:
                 self._resolve_reproduction([interaction.initiator, interaction.target])
 
-    def _resolve_observer_influence(self, interaction, observer):
+    @staticmethod
+    def _get_influence(direction, interaction_attributes, interaction_success):
+        if interaction_success:
+            influence_list = []
+            for interaction_attribute in interaction_attributes:
+                local_influence = InteractionAttributeToInfluenceDict[interaction_attribute]
+                if direction == "initiator":
+                    influence_list.append(local_influence.on_initiator)
+                elif direction == "target":
+                    influence_list.append(local_influence.on_target)
+            return tuple(sum(x) for x in zip(*influence_list))
+        else:
+            if direction == "initiator":
+                return tuple((0, 2, -2, 0))
+            elif direction == "target":
+                return tuple((2, 0, 0, -2))
+
+    def _resolve_observer_influence(self, interaction, observer, interaction_success):
+        influence_towards_initiator = self._get_influence("initiator",
+                                                          interaction.interaction_type.interaction_attributes,
+                                                          interaction_success)
+        influence_towards_target = self._get_influence("target", interaction.interaction_type.interaction_attributes,
+                                                       interaction_success)
+
+        influence_towards_initiator = utils.jitter_tuple(influence_towards_initiator)
+        influence_towards_target = utils.jitter_tuple(influence_towards_target)
+
         relationship_with_initiator = observer.social.relationships[interaction.initiator]
         relationship_with_target = observer.social.relationships[interaction.target]
-        if interaction_success:
-            initiator_influence_list = []
-            target_influence_list = []
-            for interaction_attribute in interaction.interaction_type.interaction_attributes:
-                local_influence = InteractionAttributeToInfluenceDict[interaction_attribute]
-                initiator_influence_list.append(local_influence.on_initiator)
-                target_influence_list.append(local_influence.on_target)
-            influence_towards_initiator = tuple(sum(x) for x in zip(*initiator_influence_list))
-            influence_towards_target = tuple(sum(x) for x in zip(*target_influence_list))
-        else:
-            influence_towards_initiator = (0, 2, -2, 0)
-            influence_towards_target = (2, 0, 0, -2)
-
-        influence_towards_initiator = tuple(
-            x + random.choice([-1, 0, 1]) if x != 0 else 0 for x in influence_towards_initiator)
-        influence_towards_target = tuple(
-            x + random.choice([-1, 0, 1]) if x != 0 else 0 for x in influence_towards_target)
 
         relationship_with_initiator.update(influence_towards_initiator)
         relationship_with_target.update(influence_towards_target)
 
+    def _handle_single_interaction(self, interaction, reproduction_favored):
+        if self._check_interaction_available(interaction):
+            interaction_success = interaction.target.social.consider_proposal(interaction.initiator,
+                                                                              interaction, reproduction_favored)
+            if interaction_success:
+                self._resolve_interaction(interaction)
+
+            for observer in [sf for sf in self.population if
+                             sf not in [interaction.initiator, interaction.target]
+                             and sf.resources.assigned_task is None
+                             and sf.age > 3]:
+                self._resolve_observer_influence(interaction, observer, interaction_success)
+
     def handle_social_interactions(self):
-        reporduction_favored = len(self.population) <= self.params.REPRODUCTION_BONUS_CUTOFF
+        reproduction_favored = len(self.population) <= self.params.REPRODUCTION_BONUS_CUTOFF
 
         if len(available_simfolk) > 1:
-            proposed_interactions = self._get_interaction_proposals(reporduction_favored)
+            proposed_interactions = self._get_interaction_proposals(reproduction_favored)
 
             for interaction in proposed_interactions:
-                if self._check_interaction_available(interaction):
-                    interaction_success = interaction.target.social.consider_proposal(interaction.initiator,
-                                                                                      interaction, reporduction_favored)
-                    if interaction_success:
-                        self._resolve_interaction(interaction)
-
-                    for observer in [sf for sf in available_simfolk if sf not in [interaction.initiator, interaction.target]]:
-                        self._resolve_observer_influence(interaction, observer)
-
+                self._handle_single_interaction(interaction, reproduction_favored)
 
     def _collect_water(self, simfolk):
         self.water_store += simfolk.resources.gather_water()
 
     def _collect_food(self, simfolk):
-        collection_result = simfolk.resources.gather_food(sf.resources.assigned_task.sub_info)
+        collection_result = simfolk.resources.gather_food(simfolk.resources.assigned_task.sub_info)
         self.add_food(collection_result, simfolk.resources.assigned_task.sub_info)
         modifier_magnitude = 1 + (
-                simfolk.resources.collection_aptitudes[sf.resources.assigned_task.sub_info] // 18)
+                simfolk.resources.collection_aptitudes[simfolk.resources.assigned_task.sub_info] // 18)
         if collection_result == 0:
-            relationship_mod = (0, 0, -modifier_magnitude, 0)
+            relationship_mod = (0, 0, -modifier_magnitude // 3, 0)
         else:
             relationship_mod = (0, 0, modifier_magnitude, 0)
-        for bystander in [s for s in self.population if s != simfolk]:
+        for bystander in [sf for sf in self.population if sf != simfolk]:
             bystander.social.relationships[simfolk].update(relationship_mod)
 
     def collect_resources(self):
