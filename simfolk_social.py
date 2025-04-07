@@ -49,7 +49,7 @@ class SimfolkSocial:
         return True
 
     def consider_proposal(self, interaction, procreation_favored=False):
-        if interaction.interaction_info.interaction_type == InteractionType.MATE and interaction.initiator < 17:
+        if interaction.interaction_info.interaction_type == InteractionType.MATE and interaction.initiator.age < 17:
             return False
 
         threshold = interaction.interaction_info.relationship_threshold
@@ -92,8 +92,9 @@ class SimfolkSocial:
         total = sum(weights)
         return [w / total for w in weights]
 
-    @staticmethod
-    def _get_attributes_factor(interaction):
+
+    def _get_attributes_factor(self, interaction, partner):
+        relationship = self.relationships[partner]
         total_factor = 0
 
         # Calculate proportional factors for each attribute
@@ -155,7 +156,7 @@ class SimfolkSocial:
         weights = []
         for interaction in social_interaction_config.get_all_interaction_definitions():
             base_weight = 10
-            raw_attribute_factor = self._get_attributes_factor(interaction)
+            raw_attribute_factor = self._get_attributes_factor(interaction, partner)
             attribute_contribution = self._scale_attribute_contribution(interaction, raw_attribute_factor)
             weight = base_weight + attribute_contribution
             threshold_deficit = self._get_threshold_penalty(partner, interaction)
