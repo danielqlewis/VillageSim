@@ -1,3 +1,5 @@
+from program_enums import FoodCollectionMethod
+
 class SimulationParams:
     # Start Conditions parameters
     STARTING_POPULATION = 12
@@ -6,7 +8,7 @@ class SimulationParams:
 
     # End Conditions parameters
     MAX_POPULATION = 250
-    MAX_DAYS = 3000
+    MAX_DAYS = 300
 
 
     # Reproduction parameters

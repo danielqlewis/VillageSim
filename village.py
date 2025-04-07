@@ -4,7 +4,7 @@ from simfolk_base import Simfolk
 from name_generator import generate_name
 from program_enums import FolkGender, TaskType, FoodCollectionMethod, DeathCause, InteractionType
 from simfolk_resources import TaskAssignment
-from simfolk_social import InteractionAttributeToInfluenceDict
+from social_interaction_config import InteractionAttributeToInfluenceDict
 
 
 class Village:
@@ -190,7 +190,7 @@ class Village:
         self.water_store += simfolk.resources.gather_water()
 
     def _collect_food(self, simfolk):
-        collection_result = simfolk.resources.gather_food(simfolk.resources.assigned_task.sub_info)
+        collection_result = simfolk.resources.gather_food(simfolk.resources.assigned_task.sub_info, self.params)
         self.add_food(collection_result, simfolk.resources.assigned_task.sub_info)
         modifier_magnitude = 1 + (
                 simfolk.resources.collection_aptitudes[simfolk.resources.assigned_task.sub_info] // 18)

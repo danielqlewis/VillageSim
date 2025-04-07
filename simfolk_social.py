@@ -40,10 +40,10 @@ class SimfolkSocial:
 
         other = interaction.initiator
 
-        if interaction.interaction_info.interaction == Mate and other.age < 17:
+        if interaction.interaction_info.interaction_type == InteractionType.MATE and other.age < 17:
             return False
 
-        if interaction.interaction_info == Mate and procreation_favored:
+        if interaction.interaction_info.interaction_type == InteractionType.MATE and procreation_favored:
             threshold = [50, 100, 0, 0]
         else:
             threshold = interaction.interaction_info.relationship_threshold
@@ -58,10 +58,10 @@ class SimfolkSocial:
             return False
         return True
 
-    def get_proposal_details(self, available_simfolk, reproduction_favored):
+    def get_proposal_details(self, available_simfolk, reproduction_favored, gender, age):
         partner_choice_weights = self.get_desired_partner_weights(available_simfolk)
         target_partner = utils.weighted_choice(available_simfolk, partner_choice_weights)
-        if target_partner.gender != self.gender and target_partner.age > 16 and self.age > 16:
+        if target_partner.gender != gender and target_partner.age > 16 and age > 16:
             procreation_favored = reproduction_favored
         else:
             procreation_favored = False
@@ -152,7 +152,7 @@ class SimfolkSocial:
             if relationship.cooperativity < threshold[3]:
                 threshold_deficit += (threshold[3] - relationship.cooperativity) / 50
 
-            if procreation_favored and interaction == Mate:
+            if procreation_favored and interaction.interaction_type == InteractionType.MATE:
                 weight *= 3
 
             weight = max(1, weight - threshold_deficit)

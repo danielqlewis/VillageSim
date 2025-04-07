@@ -1,6 +1,7 @@
 import utils
 from simfolk_resources import SimfolkResource
-from simfolk_social import SimfolkSocial, ALLINTERACTIONS, SocialInteraction, Mate
+from simfolk_social import SimfolkSocial, SocialInteraction
+from program_enums import InteractionType
 
 
 class Simfolk:
@@ -39,9 +40,9 @@ class Simfolk:
                 return 3
 
     def propose_interaction(self, available_simfolk, reproduction_favored):
-        proposed_activity, target_partner = self.social.get_proposal_details(available_simfolk, reproduction_favored)
+        proposed_activity, target_partner = self.social.get_proposal_details(available_simfolk, reproduction_favored, self.gender, self.age)
 
-        if proposed_activity == Mate and target_partner.age < 17:
+        if proposed_activity.interaction_type == InteractionType.MATE and target_partner.age < 17:
             return None
 
         return SocialInteraction(proposed_activity, self, target_partner)
