@@ -26,3 +26,9 @@ class InteractionAttributes(Enum):
     COMBATIVE = 4
     SKILL = 5
     RECREATION = 6
+
+
+class DeathCause(Enum):
+    AGE = 0
+    THIRST = 1
+    HUNGER = 2

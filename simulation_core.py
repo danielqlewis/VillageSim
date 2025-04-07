@@ -30,4 +30,4 @@ class PrimarySimulator:
                 running = False
 
             if not self.village.population:
-                break
+                running = False
