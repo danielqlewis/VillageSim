@@ -106,11 +106,11 @@ class Village:
             if parents[0].gender != parents[1].gender:
                 self.pending_births.append(parents)
 
-    def _get_interaction_proposals(self, reporduction_favored):
-        available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
+    @staticmethod
+    def _get_interaction_proposals(reproduction_favored, available_simfolk):
         proposed_interactions = []
         for sf in available_simfolk:
-            proposal = sf.propose_interaction([s for s in available_simfolk if s != sf], reporduction_favored)
+            proposal = sf.propose_interaction([s for s in available_simfolk if s != sf], reproduction_favored)
             if proposal:
                 proposed_interactions.append(proposal)
         return proposed_interactions
@@ -167,27 +167,24 @@ class Village:
         relationship_with_initiator.update(influence_towards_initiator)
         relationship_with_target.update(influence_towards_target)
 
-    def _handle_single_interaction(self, interaction, reproduction_favored):
+    def _handle_single_interaction(self, interaction, reproduction_favored, available_simfolk):
         if self._check_interaction_available(interaction):
-            interaction_success = interaction.target.social.consider_proposal(interaction.initiator,
-                                                                              interaction, reproduction_favored)
+            interaction_success = interaction.target.social.consider_proposal(interaction, reproduction_favored)
             if interaction_success:
                 self._resolve_interaction(interaction)
 
-            for observer in [sf for sf in self.population if
-                             sf not in [interaction.initiator, interaction.target]
-                             and sf.resources.assigned_task is None
-                             and sf.age > 3]:
+            for observer in [sf for sf in available_simfolk if sf not in [interaction.initiator, interaction.target]]:
                 self._resolve_observer_influence(interaction, observer, interaction_success)
 
     def handle_social_interactions(self):
+        available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
         reproduction_favored = len(self.population) <= self.params.REPRODUCTION_BONUS_CUTOFF
 
         if len(available_simfolk) > 1:
-            proposed_interactions = self._get_interaction_proposals(reproduction_favored)
+            proposed_interactions = self._get_interaction_proposals(reproduction_favored, available_simfolk)
 
             for interaction in proposed_interactions:
-                self._handle_single_interaction(interaction, reproduction_favored)
+                self._handle_single_interaction(interaction, reproduction_favored, available_simfolk)
 
     def _collect_water(self, simfolk):
         self.water_store += simfolk.resources.gather_water()

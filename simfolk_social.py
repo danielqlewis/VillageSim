@@ -159,7 +159,9 @@ class SimfolkSocial:
     def create_relationship(self, other_simfolk):
         self.relationships[other_simfolk] = Relationship()
 
-    def consider_proposal(self, other, interaction, procreation_favored=False):
+    def consider_proposal(self, interaction, procreation_favored=False):
+
+        other = interaction.initiator
 
         if interaction.interaction_type == Mate and other.age < 17:
             return False
@@ -178,6 +180,17 @@ class SimfolkSocial:
         elif relationship.cooperativity < threshold[3]:
             return False
         return True
+
+    def get_proposal_details(self, available_simfolk, reproduction_favored):
+        partner_choice_weights = self.get_desired_partner_weights(available_simfolk)
+        target_partner = utils.weighted_choice(available_simfolk, partner_choice_weights)
+        if target_partner.gender != self.gender and target_partner.age > 16 and self.age > 16:
+            procreation_favored = reproduction_favored
+        else:
+            procreation_favored = False
+        activity_choice_weights = self.get_interaction_type_weights(target_partner, procreation_favored)
+        proposed_activity = utils.weighted_choice(ALLINTERACTIONS, activity_choice_weights)
+        return proposed_activity, target_partner
 
     def get_desired_partner_weights(self, available_simfolk):
         # If there's no one available, return empty list

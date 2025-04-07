@@ -12,13 +12,7 @@ class SimfolkResource:
     def __init__(self):
         self.meal_skipped = False
         self.assigned_task = None
-
-        self.collection_aptitudes = {
-            FoodCollectionMethod.GATHER: random.choice([x for x in range(1, 25)]),
-            FoodCollectionMethod.HUNT: random.choice([x for x in range(1, 25)]),
-            FoodCollectionMethod.FISH: random.choice([x for x in range(1, 25)]),
-            FoodCollectionMethod.TRAP: random.choice([x for x in range(1, 25)])
-        }
+        self.collection_aptitudes = {method: random.randint(1, 24) for method in FoodCollectionMethod}
 
 
     def get_collection_preferences(self):
@@ -35,26 +29,17 @@ class SimfolkResource:
 
     @staticmethod
     def gather_water():
-        return 24 + random.choice([x for x in range(-4, 5)])
+        return 24 + random.randint(-4, 4)
 
-    def gather_food(self, collection_method):
-        base_success_dict = {FoodCollectionMethod.GATHER: 75,
-                             FoodCollectionMethod.HUNT: 30,
-                             FoodCollectionMethod.FISH: 50,
-                             FoodCollectionMethod.TRAP: 55
-                             }
-        base_amount_dict = {FoodCollectionMethod.GATHER: 12,
-                            FoodCollectionMethod.HUNT: 42,
-                            FoodCollectionMethod.FISH: 22,
-                            FoodCollectionMethod.TRAP: 16
-                            }
-        base_success_rate = base_success_dict[collection_method]
-        active_success_rate = (base_success_rate + self.collection_aptitudes[collection_method]) / 2
-        success_roll = random.choice([x for x in range(1, 101)])
-        if success_roll <= active_success_rate:
+    def gather_food(self, collection_method, params):
+        active_aptitude = self.collection_aptitudes[collection_method]
+        base_success_rate = params.COLLECTION_BASE_SUCCESS[collection_method]
+        active_success_rate = (base_success_rate + active_aptitude) / 2
+
+        if random.randint(1, 100) <= active_success_rate:
             level_up_roll = random.choice([True, False])
             if level_up_roll:
                 self.level_up_aptitude(collection_method)
-            return base_amount_dict[collection_method] + (self.collection_aptitudes[collection_method] // 10)
+            return params.COLLECTION_BASE_AMOUNT[collection_method] + (active_aptitude // 10)
         else:
             return 0
