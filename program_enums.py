@@ -32,3 +32,18 @@ class DeathCause(Enum):
     AGE = 0
     THIRST = 1
     HUNGER = 2
+
+
+class InteractionType(Enum):
+    TALK = 0
+    SHARE_FOOD = 1
+    GAME = 2
+    SPORT = 3
+    MAKE_ART = 4
+    WRESTLE = 5
+    DEBATE = 6
+    ARGUE = 7
+    FIGHT = 8
+    LOUNGE = 9
+    CUDDLE = 10
+    MATE = 11
