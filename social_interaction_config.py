@@ -11,6 +11,7 @@ class RelationshipModifier:
         active_modification = [m + random.choice(range(a, b + 1)) for m, (a, b) in
                                zip(self.base_mod, self.randomization)]
         relationship.update(active_modification)
+        return active_modification
 
 
 class InteractionAttributeObserverInfluence:

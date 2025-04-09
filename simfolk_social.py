@@ -24,8 +24,9 @@ class SocialInteraction:
         self.target = target
 
     def resolve(self):
-        self.interaction_info.effect_on_init.resolve(self.initiator.social.relationships[self.target])
-        self.interaction_info.effect_on_target.resolve(self.target.social.relationships[self.initiator])
+        init_effect = self.interaction_info.effect_on_init.resolve(self.initiator.social.relationships[self.target])
+        target_effect = self.interaction_info.effect_on_target.resolve(self.target.social.relationships[self.initiator])
+        return init_effect, target_effect
 
 
 class SimfolkSocial:

@@ -8,11 +8,12 @@ from social_interaction_config import InteractionAttributeToInfluenceDict
 
 
 class Village:
-    def __init__(self, params):
+    def __init__(self, params, recorder):
         self.population = []
         self.food_store = params.STARTING_FOOD
         self.water_store = params.STARTING_WATER
         self.params = params
+        self.recorder = recorder
         self.pending_births = []
         self.pending_deaths = []
         self.interacted_pairs = set()
@@ -40,6 +41,7 @@ class Village:
         if age != 0:
             child_simfolk.age = age
         self.add_simfolk(child_simfolk)
+        self.recorder.record_birth(parents[0], parents[1], child_simfolk)
 
     def night_reset(self):
         self.pending_births = []
@@ -105,6 +107,7 @@ class Village:
         if roll < self.params.BASE_REPRODUCTION_CHANCE:
             if parents[0].gender != parents[1].gender:
                 self.pending_births.append(parents)
+                self.recorder.update_reproduction_flag(True)
 
     @staticmethod
     def _get_interaction_proposals(reproduction_favored, available_simfolk):
@@ -129,7 +132,8 @@ class Village:
         interaction.target.social.social_interaction_count += 1
         self.interacted_pairs.add((interaction.initiator, interaction.target))
         self.interacted_pairs.add((interaction.target, interaction.initiator))
-        interaction.resolve()
+        init_change, target_change = interaction.resolve()
+        self.recorder.update_participants_attitude_change((init_change, target_change))
         if interaction.interaction_info.interaction_type is InteractionType.MATE:
             if interaction.initiator.age > 16 and interaction.target.age > 16:
                 self._resolve_reproduction([interaction.initiator, interaction.target])
@@ -167,14 +171,22 @@ class Village:
         relationship_with_initiator.update(influence_towards_initiator)
         relationship_with_target.update(influence_towards_target)
 
+        self.recorder.add_observer_influence(observer, interaction.initiator, influence_towards_initiator)
+        self.recorder.add_observer_influence(observer, interaction.target, influence_towards_target)
+
     def _handle_single_interaction(self, interaction, reproduction_favored, available_simfolk):
         if self._check_interaction_available(interaction):
             interaction_success = interaction.target.social.consider_proposal(interaction, reproduction_favored)
+
+            self.recorder.establish_social_interaction(interaction, interaction_success)
+
             if interaction_success:
                 self._resolve_interaction(interaction)
 
             for observer in [sf for sf in available_simfolk if sf not in [interaction.initiator, interaction.target]]:
                 self._resolve_observer_influence(interaction, observer, interaction_success)
+
+            self.recorder.register_social_interaction()
 
     def handle_social_interactions(self):
         available_simfolk = [sf for sf in self.population if sf.resources.assigned_task is None and sf.age > 3]
@@ -187,19 +199,28 @@ class Village:
                 self._handle_single_interaction(interaction, reproduction_favored, available_simfolk)
 
     def _collect_water(self, simfolk):
-        self.water_store += simfolk.resources.gather_water()
+        collected_amount = simfolk.resources.gather_water()
+        self.water_store += collected_amount
+        self.recorder.record_resource_collection(simfolk, TaskType.WATER_COLLECT, None, True, collected_amount, False,
+                                                 [])
 
     def _collect_food(self, simfolk):
         collection_result = simfolk.resources.gather_food(simfolk.resources.assigned_task.sub_info, self.params)
-        self.add_food(collection_result, simfolk.resources.assigned_task.sub_info)
+        self.add_food(collection_result[0], simfolk.resources.assigned_task.sub_info)
         modifier_magnitude = 1 + (
                 simfolk.resources.collection_aptitudes[simfolk.resources.assigned_task.sub_info] // 18)
-        if collection_result == 0:
+        if collection_result[0] == 0:
             relationship_mod = (0, 0, -modifier_magnitude // 3, 0)
         else:
             relationship_mod = (0, 0, modifier_magnitude, 0)
+        influence_record = []
         for bystander in [sf for sf in self.population if sf != simfolk]:
             bystander.social.relationships[simfolk].update(relationship_mod)
+            influence_record.append((bystander, relationship_mod))
+
+        self.recorder.record_resource_collection(simfolk, TaskType.FOOD_COLLECT,
+                                                 simfolk.resources.assigned_task.sub_info, collection_result[0] > 0,
+                                                 collection_result[0], collection_result[1], influence_record)
 
     def collect_resources(self):
         working_population = [sf for sf in self.population if sf.resources.assigned_task is not None and sf.age > 3]
@@ -211,18 +232,26 @@ class Village:
 
     def _pay_water_upkeep(self, day):
         for sf in self.population:
+            gone_thirsty = False
             water_cost = sf.get_water_cost(day)
             if water_cost > self.water_store:
+                gone_thirsty = True
                 thirst_flip = random.choice([True, False])
                 if not thirst_flip:
                     self.pending_deaths.append((sf, DeathCause.THIRST))
             self.water_store = max(self.water_store - water_cost, 0)
+            if gone_thirsty:
+                self.recorder.update_water_consumption(max(self.water_store - water_cost, 0), sf)
+            else:
+                self.recorder.update_water_consumption(max(self.water_store - water_cost, 0), None)
 
     def _pay_food_upkeep(self):
         for sf in self.population:
+            gone_hungry = False
             food_cost = sf.get_food_cost()
             if food_cost > self.food_store:
                 if sf.resources.meal_skipped:
+                    gone_hungry = True
                     starve_roll = utils.weighted_choice([True, False], [.25, .75])
                     if not starve_roll:
                         self.pending_deaths.append((sf, DeathCause.HUNGER))
@@ -231,6 +260,10 @@ class Village:
             else:
                 sf.resources.meal_skipped = False
             self.food_store = max(self.food_store - food_cost, 0)
+            if gone_hungry:
+                self.recorder.update_food_consumption(max(self.food_store - food_cost, 0), sf)
+            else:
+                self.recorder.update_food_consumption(max(self.food_store - food_cost, 0), None)
 
     def pay_upkeep(self, day):
         self._pay_water_upkeep(day)
@@ -244,6 +277,7 @@ class Village:
         for sf in list(self.population):
             if day % 7 == sf.birthday:
                 sf.age += 1
+                self.recorder.record_aging(sf, sf.age)
             death_chance = max(0, (sf.age - 60) / 100)  # Starts at age 60, increases by 1% per year
             if random.random() < death_chance:
                 self.pending_deaths.append((sf, DeathCause.AGE))
@@ -251,6 +285,7 @@ class Village:
     def _handle_deaths(self):
         for death in self.pending_deaths:
             self.remove_simfolk(death[0])
+            self.recorder.record_death(self, death[0], death[0].age, death[1])
 
     def handle_population_events(self, day):
         self._handle_births(day)

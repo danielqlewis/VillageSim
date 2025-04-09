@@ -40,6 +40,6 @@ class SimfolkResource:
             level_up_roll = random.choice([True, False])
             if level_up_roll:
                 self.level_up_aptitude(collection_method)
-            return params.COLLECTION_BASE_AMOUNT[collection_method] + (active_aptitude // 10)
+            return params.COLLECTION_BASE_AMOUNT[collection_method] + (active_aptitude // 10), level_up_roll
         else:
-            return 0
+            return 0, False
