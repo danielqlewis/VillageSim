@@ -3,7 +3,7 @@ from program_enums import FoodCollectionMethod
 
 class SimulationParams:
     # Start Conditions parameters
-    STARTING_POPULATION = 12
+    STARTING_POPULATION = 4
     STARTING_WATER = 25
     STARTING_FOOD = 35
 

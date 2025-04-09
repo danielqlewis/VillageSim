@@ -41,7 +41,10 @@ class Village:
         if age != 0:
             child_simfolk.age = age
         self.add_simfolk(child_simfolk)
-        self.recorder.record_birth(parents[0], parents[1], child_simfolk)
+        if parents is None:
+            self.recorder.record_birth(None, None, child_simfolk)
+        else:
+            self.recorder.record_birth(parents[0], parents[1], child_simfolk)
 
     def night_reset(self):
         self.pending_births = []
@@ -241,9 +244,9 @@ class Village:
                     self.pending_deaths.append((sf, DeathCause.THIRST))
             self.water_store = max(self.water_store - water_cost, 0)
             if gone_thirsty:
-                self.recorder.update_water_consumption(max(self.water_store - water_cost, 0), sf)
+                self.recorder.update_water_consumption(min(self.water_store, water_cost), sf)
             else:
-                self.recorder.update_water_consumption(max(self.water_store - water_cost, 0), None)
+                self.recorder.update_water_consumption(min(self.water_store, water_cost), None)
 
     def _pay_food_upkeep(self):
         for sf in self.population:
@@ -261,9 +264,9 @@ class Village:
                 sf.resources.meal_skipped = False
             self.food_store = max(self.food_store - food_cost, 0)
             if gone_hungry:
-                self.recorder.update_food_consumption(max(self.food_store - food_cost, 0), sf)
+                self.recorder.update_food_consumption(min(self.food_store, food_cost), sf)
             else:
-                self.recorder.update_food_consumption(max(self.food_store - food_cost, 0), None)
+                self.recorder.update_food_consumption(min(self.food_store, food_cost), None)
 
     def pay_upkeep(self, day):
         self._pay_water_upkeep(day)

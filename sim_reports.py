@@ -100,7 +100,8 @@ class SimulationReporter:
             child_birthday=child.birthday,
             child_name=child.name
         )
-        self.current_day_report.community_events.births.append(new_record)
+        if self.current_day_report:
+            self.current_day_report.community_events.births.append(new_record)
 
     def record_death(self, simfolk, age, cause):
         new_record = DeathRecord(
@@ -136,8 +137,8 @@ class SimulationReporter:
 
 @dataclass
 class BirthRecord:
-    parent_0: Simfolk
-    parent_1: Simfolk
+    parent_0: Optional[Simfolk]
+    parent_1: Optional[Simfolk]
     child: Simfolk
     child_gender: FolkGender
     child_birthday: int
