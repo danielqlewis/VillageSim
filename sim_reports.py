@@ -31,7 +31,8 @@ class SimulationReporter:
                 births=[],
                 aging_simfolk=[],
                 deaths=[]
-            )
+            ),
+            final_population=0
         )
 
     def establish_social_interaction(self, interaction, accepted):
@@ -126,9 +127,9 @@ class SimulationReporter:
         if hungry_simfolk:
             self.current_day_report.consumption.simfolk_gone_hungry.append(hungry_simfolk)
 
-    def end_day(self):
-        """Finalize the current day's report and add it to the full report"""
+    def end_day(self, pop_size):
         if self.current_day_report:
+            self.current_day_report.final_population = pop_size
             self.full_report.simulated_days.append(self.current_day_report)
             self.current_day_report = None
 
@@ -238,6 +239,7 @@ class SimulationDayReport:
     interaction_outcomes: List[SocialInteractionResultFull]
     community_events: LifeEventsReport
     consumption: ConsumptionReport
+    final_population: int
 
 
 @dataclass
