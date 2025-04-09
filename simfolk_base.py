@@ -5,14 +5,26 @@ from program_enums import InteractionType
 
 
 class Simfolk:
-    def __init__(self, name, gender, birthday, postnominal=0):
+    def __init__(self, name, gender, birthday, postnomial=0):
         self.name = name
         self.gender = gender
         self.birthday = birthday
-        self.postnomial = postnominal
+        self.postnomial = postnomial
         self.age = 0
         self.resources = SimfolkResource()
         self.social = SimfolkSocial()
+
+    def __str__(self):
+        roman_numerals = {
+            1: "I", 2: "II", 3: "III", 4: "IV", 5: "V",
+            6: "VI", 7: "VII", 8: "VIII", 9: "IX"
+        }
+
+        if self.postnomial == 0:
+            return self.name
+        else:
+            return f"{self.name} {roman_numerals.get(self.postnomial, '')}"
+
 
     def step_reset(self):
         self.resources.assigned_task = None

@@ -13,7 +13,7 @@ class PrimarySimulator:
 
     def _advance_day(self):
         self.current_day += 1
-        self.simulation_recorder.start_new_day(self.current_day, village.water_store, village.food_store)
+        self.simulation_recorder.start_new_day(self.current_day, self.village.water_store, self.village.food_store)
         self.village.auto_assign_tasks()
         self.village.handle_social_interactions()
         self.village.collect_resources()

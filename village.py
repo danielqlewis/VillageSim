@@ -285,7 +285,7 @@ class Village:
     def _handle_deaths(self):
         for death in self.pending_deaths:
             self.remove_simfolk(death[0])
-            self.recorder.record_death(self, death[0], death[0].age, death[1])
+            self.recorder.record_death(death[0], death[0].age, death[1])
 
     def handle_population_events(self, day):
         self._handle_births(day)

@@ -63,7 +63,7 @@ class SimulationReporter:
 
     def add_observer_influence(self, observer, target, change):
         new_observer_event = EventInfluence(observer, target, change)
-        self.current_event.secondary.influence_result.append(new_observer_event)
+        self.current_event.secondary.influence_results.append(new_observer_event)
 
     def register_social_interaction(self):
         self.current_day_report.interaction_outcomes.append(self.current_event)
@@ -124,7 +124,7 @@ class SimulationReporter:
     def update_food_consumption(self, amount, hungry_simfolk):
         self.current_day_report.consumption.total_food_consumed += amount
         if hungry_simfolk:
-            self.current_day_report.consumption.simfolk_gone_hugry.append(hungry_simfolk)
+            self.current_day_report.consumption.simfolk_gone_hungry.append(hungry_simfolk)
 
     def end_day(self):
         """Finalize the current day's report and add it to the full report"""
