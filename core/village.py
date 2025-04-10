@@ -1,10 +1,10 @@
 import random
-import utils
-from simfolk_base import Simfolk
-from name_generator import generate_name
-from program_enums import FolkGender, TaskType, FoodCollectionMethod, DeathCause, InteractionType
-from simfolk_resources import TaskAssignment
-from social_interaction_config import InteractionAttributeToInfluenceDict
+from utils import utils
+from entities.simfolk_base import Simfolk
+from utils.name_generator import generate_name
+from common.program_enums import FolkGender, TaskType, FoodCollectionMethod, DeathCause, InteractionType
+from entities.simfolk_resources import TaskAssignment
+from core.social_interaction_config import InteractionAttributeToInfluenceDict
 
 
 class Village:

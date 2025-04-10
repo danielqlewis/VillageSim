@@ -1,7 +1,6 @@
-from simulation_core import PrimarySimulator
-from record_formatter import SimulationFormatter
+from core.simulation_core import PrimarySimulator
+from reporting.record_formatter import SimulationFormatter
 from enum import Enum
-import time
 
 
 class DetailLevel(Enum):

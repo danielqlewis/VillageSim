@@ -1,7 +1,7 @@
-from village import Village
+from core.village import Village
 from random import randint
-from simulation_params import SimulationParams
-from sim_reports import SimulationReporter
+from core.simulation_params import SimulationParams
+from reporting.sim_reports import SimulationReporter
 
 
 class PrimarySimulator:
@@ -20,6 +20,7 @@ class PrimarySimulator:
         self.village.collect_resources()
         self.village.pay_upkeep(self.current_day)
         self.village.handle_population_events(self.current_day)
+        self.simulation_recorder.record_all_relationships(self.village.population)
         self.simulation_recorder.end_day(len(self.village.population))
         self.village.night_reset()
 

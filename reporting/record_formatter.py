@@ -1,7 +1,7 @@
 # record_formatter.py
 
 
-from program_enums import TaskType, FoodCollectionMethod, InteractionType, DeathCause
+from common.program_enums import TaskType, FoodCollectionMethod, InteractionType, DeathCause
 
 
 class SimulationFormatter:

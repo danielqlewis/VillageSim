@@ -1,5 +1,5 @@
 import random
-from program_enums import InteractionType, InteractionAttributes
+from common.program_enums import InteractionType, InteractionAttributes
 
 
 class RelationshipModifier:
@@ -20,8 +20,8 @@ class InteractionAttributeObserverInfluence:
         self.on_target = on_target
 
 
-talk_init_mod = RelationshipModifier((10, 0, 0, 10), ((-20, 20), (-15, 15), (-10, 10), (-10, 10)))
-talk_target_mod = RelationshipModifier((10, 0, 0, 10), ((-20, 20), (-15, 15), (-10, 10), (-10, 10)))
+talk_init_mod = RelationshipModifier((15, 10, 10, 15), ((-20, 20), (-10, 15), (-10, 10), (-10, 10)))
+talk_target_mod = RelationshipModifier((15, 10, 15, 10), ((-20, 20), (-10, 15), (-10, 10), (-10, 10)))
 
 share_food_init_mod = RelationshipModifier((0, 20, 0, 0), ((0, 0), (-5, 5), (0, 0), (-5, 10)))
 share_food_target_mod = RelationshipModifier((0, 20, 10, 10), ((0, 0), (-5, 5), (0, 0), (-5, 10)))

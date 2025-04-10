@@ -1,5 +1,5 @@
 import random
-from program_enums import FolkGender
+from common.program_enums import FolkGender
 
 MALE_NAME_BANK = ["Adam", "Alex", "Andrew", "Anthony", "Ben", "Blake", "Brian", "Caleb", "Carl", "Charles",
                   "Chris", "Cody", "Colin", "Daniel", "David", "Derek", "Dylan", "Elijah", "Eric", "Ethan",

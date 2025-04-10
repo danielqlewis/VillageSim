@@ -1,6 +1,6 @@
-import utils
-import social_interaction_config
-from program_enums import InteractionAttributes, InteractionType
+from utils import utils
+from core import social_interaction_config
+from common.program_enums import InteractionAttributes, InteractionType
 
 
 class Relationship:
@@ -164,6 +164,9 @@ class SimfolkSocial:
             weight = max(1, weight - threshold_deficit)
             if procreation_favored and interaction.interaction_type == InteractionType.MATE:
                 weight *= 3
+            if self.relationships[partner].respect + self.relationships[partner].enjoyment // 2 < 250:
+                if interaction.interaction_type == InteractionType.TALK:
+                    weight *= 2
             weights.append(weight)
 
         # Normalize weights

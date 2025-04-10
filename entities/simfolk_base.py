@@ -1,7 +1,6 @@
-import utils
-from simfolk_resources import SimfolkResource
-from simfolk_social import SimfolkSocial, SocialInteraction
-from program_enums import InteractionType
+from entities.simfolk_resources import SimfolkResource
+from entities.simfolk_social import SimfolkSocial, SocialInteraction
+from common.program_enums import InteractionType
 
 
 class Simfolk:

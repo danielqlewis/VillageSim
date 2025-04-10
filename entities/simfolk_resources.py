@@ -1,5 +1,5 @@
 import random
-from program_enums import FoodCollectionMethod
+from common.program_enums import FoodCollectionMethod
 
 
 class TaskAssignment:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, List, Tuple
-from simfolk_base import Simfolk
-from program_enums import InteractionType, TaskType, FoodCollectionMethod, FolkGender, DeathCause
+from entities.simfolk_base import Simfolk
+from common.program_enums import InteractionType, TaskType, FoodCollectionMethod, FolkGender, DeathCause
 
 
 class SimulationReporter:
@@ -20,6 +20,7 @@ class SimulationReporter:
             initial_resources=initial_resources,
             collection_outcomes=[],
             interaction_outcomes=[],
+            relationships_status=[],
             consumption=ConsumptionReport(
                 total_food_consumed=0,
                 total_water_consumed=0,
@@ -90,6 +91,18 @@ class SimulationReporter:
             secondary=collection_secondary_record
         )
         self.current_day_report.collection_outcomes.append(full_record)
+
+    def record_opinion(self, simfolk, target):
+        opinion = simfolk.social.relationships[target]
+        opinion_record = OpinionReport(simfolk, target, opinion)
+        self.current_day_report.relationships_status.append(opinion_record)
+
+
+
+    def record_all_relationships(self, population):
+        for simfolk in population:
+            for sf in population:
+                self.record_opinion(simfolk, sf)
 
     def record_birth(self, parent_0, parent_1, child):
         new_record = BirthRecord(
@@ -231,6 +244,11 @@ class ConsumptionReport:
     simfolk_gone_thirsty: List[Simfolk]
     simfolk_gone_hungry: List[Simfolk]
 
+@dataclass
+class OpinionReport:
+    opinion_holder: Simfolk
+    opinion_subject: Simfolk
+    opinion_vector: Tuple[int, int, int, int]
 
 @dataclass
 class SimulationDayReport:
@@ -238,6 +256,7 @@ class SimulationDayReport:
     initial_resources: ResourceStoreReport
     collection_outcomes: List[ResourceCollectionResultFull]
     interaction_outcomes: List[SocialInteractionResultFull]
+    relationships_status: List[OpinionReport]
     community_events: LifeEventsReport
     consumption: ConsumptionReport
     final_population: int

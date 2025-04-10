@@ -1,9 +1,9 @@
-from program_enums import FoodCollectionMethod
+from common.program_enums import FoodCollectionMethod
 
 
 class SimulationParams:
     # Start Conditions parameters
-    STARTING_POPULATION = 4
+    STARTING_POPULATION = 12
     STARTING_WATER = 25
     STARTING_FOOD = 35
 
@@ -13,7 +13,7 @@ class SimulationParams:
 
     # Reproduction parameters
     BASE_REPRODUCTION_CHANCE = 50
-    REPRODUCTION_BONUS_CUTOFF = 20
+    REPRODUCTION_BONUS_CUTOFF = 12
 
     # Resource collection parameters
     COLLECTION_BASE_SUCCESS = {FoodCollectionMethod.GATHER: 75,
